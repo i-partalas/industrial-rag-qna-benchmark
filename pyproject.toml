@@ -19,6 +19,7 @@ unstructured = {extras = ["pdf"], version = "^0.15.13"}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.8.0"
+colorlog = "^6.8.2"
 
 [build-system]
 requires = ["poetry-core"]
