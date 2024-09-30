@@ -6,7 +6,7 @@ authors = ["Ioannis Partalas <partalas.ioan@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.9.7 || >3.9.7,<3.12"
 pydantic = "^2.9.1"
 transformers = "^4.44.2"
 langchain = "^0.2.16"
