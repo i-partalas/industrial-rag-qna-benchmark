@@ -13,12 +13,12 @@ st.title(
 tabs = st.tabs(
     [
         "Home",
-        "Upload Data",
-        "Select LLMs",
-        "Select Metrics",
-        "Upload/Create Evaluation Set",
-        "Evaluate",
-        "View Results",
+        "Data",
+        "LLMs",
+        "Metrics",
+        "Evaluation Set",
+        "Evaluation",
+        "Results",
     ]
 )
 
@@ -182,9 +182,7 @@ with tabs[3]:
 # TODO: Complete the help msg
 with tabs[4]:
     method_1 = "Upload your own evaluation dataset"
-    method_2 = (
-        "Upload PDF file(s) for the synthetic generation of the evaluation dataset"
-    )
+    method_2 = "Generate a synthetic evaluation dataset based on uploaded PDF file(s)"
     choice = st.radio(
         label="Choose the method to proceed with the evaluation dataset:",
         options=(method_1, method_2),
