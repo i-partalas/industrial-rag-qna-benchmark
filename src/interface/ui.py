@@ -266,7 +266,7 @@ with tabs[5]:
         "Model Temperature:",
         min_value=0.0,
         max_value=1.0,
-        value=0.7,
+        value=0.2,
         step=0.05,
         help="Controls the randomness of predictions. Lower values make the model more deterministic.",
     )
@@ -282,6 +282,14 @@ with tabs[5]:
     # Section 5: Evaluation
     # TODO
     st.subheader("Evaluation Hyperparameters")
+    eval_model_temperature = st.slider(
+        "Model Temperature for Evaluation:",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.2,
+        step=0.05,
+        help="Controls the randomness of predictions. Lower values make the model more deterministic.",
+    )
 
     # Button to save configurations
     if st.button("Save Hyperparameters"):
