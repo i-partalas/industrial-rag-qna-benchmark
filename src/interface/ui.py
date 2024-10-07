@@ -33,6 +33,7 @@ with tabs[0]:
 
 # Tab: Upload Data
 with tabs[1]:
+    st.header("Upload the PDF files")
     uploaded_pdfs = st.file_uploader(
         "Upload the PDF file(s) you want to interact with:",
         type="pdf",
@@ -41,13 +42,13 @@ with tabs[1]:
 
 # Tab: Select LLMs
 with tabs[2]:
+    st.header("Select the LLMs to Evaluate")
     # Create two columns: Proprietary and Open-Sourced LLMs
     col1, col2 = st.columns(2)
 
     # Proprietary LLMs - Column 1
     with col1:
         st.subheader("Proprietary LLMs")
-
         # Radio box to select platform
         platform_choice = st.radio(
             "Select the Platform:",
@@ -80,7 +81,6 @@ with tabs[2]:
     # Open-Sourced LLMs - Column 2
     with col2:
         st.subheader("Open-Sourced LLMs")
-
         # Radio box with only one option
         platform_choice_os = st.radio(
             "Select the Platform:",
@@ -114,6 +114,7 @@ with tabs[2]:
 
 # Tab: Select Metrics
 with tabs[3]:
+    st.header("Select the Evaluation Metrics")
     metric_families = {
         "Intrinsic": ["Perplexity"],
         "Lexical": ["BLEU", "ROUGE-1", "ROUGE-2", "ROUGE-L", "METEOR"],
@@ -182,6 +183,7 @@ with tabs[3]:
 # Tab: Upload/Create Evaluation Set
 # TODO: Complete the help msg
 with tabs[4]:
+    st.header("Upload or Create an Evaluation Dataset")
     method_1 = "Upload your own evaluation dataset"
     method_2 = "Generate a synthetic evaluation dataset based on uploaded PDF file(s)"
     choice = st.radio(
@@ -210,7 +212,7 @@ with tabs[4]:
 
 # Tab: RAG Hyperparameters
 with tabs[5]:
-    st.header("Configure RAG Hyperparameters")
+    st.header("Configure the RAG Hyperparameters")
 
     # Section 1: Preprocessing
     st.subheader("Preprocessing Hyperparameters")
@@ -297,10 +299,12 @@ with tabs[5]:
 
 # Tab: Evaluate
 with tabs[6]:
+    st.header("Run the Evaluation")
     st.button("Run Evaluation", type="primary", use_container_width=True)
 
 # Tab: View Results
 with tabs[7]:
+    st.header("View the Evaluation Results")
     st.write(
         "Once you upload or generate an evaluation set, results will be displayed here."
     )
