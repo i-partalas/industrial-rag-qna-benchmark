@@ -18,8 +18,14 @@ class PDFChunker:
         :param evalset_path: Path to an Excel file with gold-standard references.
         :param pdf_path: Path to the directory containing PDF files.
         """
-        self.evalset_df = pd.read_excel(evalset_path)
+        self.evalset_df = self._read_data(evalset_path)
         self.pdf_path = pdf_path
+
+    def _read_data(self, path: str) -> pd.DataFrame:
+        df = pd.read_excel(path)
+        df.columns = df.columns.str.lower()
+        df = df.fillna("")
+        return df
 
     def _extract_queried_pdf_names(self) -> Dict[str, str]:
         """
@@ -28,7 +34,7 @@ class PDFChunker:
         :return: A dictionary mapping PDF filenames to their full file paths.
         """
         fname_to_fpath = {}
-        queried_pdf_names = self.evalset_df["Doc_name"].tolist()
+        queried_pdf_names = self.evalset_df["doc_name"].tolist()
         for root, _, filenames in os.walk(self.pdf_path, topdown=True):
             for filename in filenames:
                 if filename.endswith(".pdf") and filename in queried_pdf_names:
@@ -42,12 +48,12 @@ class PDFChunker:
         columns and duplicates.
         """
         fname_to_fpath = self._extract_queried_pdf_names()
-        self.evalset_df["Filepath"] = self.evalset_df["Doc_name"].map(fname_to_fpath)
+        self.evalset_df["filepath"] = self.evalset_df["doc_name"].map(fname_to_fpath)
         self.evalset_df.drop(
             self.evalset_df.columns[[0, 1, 2, 3, -2]], axis=1, inplace=True
         )
         self.evalset_df.drop_duplicates(
-            subset=["Filepath"], inplace=True, ignore_index=True
+            subset=["filepath"], inplace=True, ignore_index=True
         )
 
     def _insert_data_to_df(
@@ -61,15 +67,15 @@ class PDFChunker:
         :param lang: The language of the document.
         """
         lang = lang.lower()
-        cols = ["Texts", "IDs"]
+        cols = ["texts", "ids"]
         for col in cols:
             if col not in self.evalset_df.columns:
                 self.evalset_df[col] = None
 
         chunk_texts = set([chunk.text for chunk in chunks])
         chunk_ids = [str(uuid4()) for _ in chunk_texts]
-        self.evalset_df.at[row_idx, "Texts"] = chunk_texts
-        self.evalset_df.at[row_idx, "IDs"] = chunk_ids
+        self.evalset_df.at[row_idx, "texts"] = chunk_texts
+        self.evalset_df.at[row_idx, "ids"] = chunk_ids
 
     def _unstructured_chunk_pdf(self, filepath: str) -> List[Document]:
         """
@@ -89,7 +95,7 @@ class PDFChunker:
             new_after_n_chars=3800,
             combine_text_under_n_chars=2000,
         )
-        docs = [
+        docs: List[Document] = [
             Document(page_content=chunk.text, metadata=chunk.metadata.to_dict())
             for chunk in chunks
         ]
@@ -103,7 +109,7 @@ class PDFChunker:
         for index, row in tqdm(
             self.evalset_df.iterrows(), desc="Processing PDFs", unit=" PDF"
         ):
-            filepath = row["Filepath"]
-            lang = row["Language"]
+            filepath = row["filepath"]
+            lang = row["language"]
             docs = self._unstructured_chunk_pdf(filepath)
             self._insert_data_to_df(index, docs, lang)
