@@ -17,6 +17,7 @@ torch = "2.2.1"
 unstructured = {extras = ["pdf"], version = "^0.15.13"}
 streamlit = "^1.38.0"
 accelerate = "^1.0.0"
+extra-streamlit-components = "^0.1.71"
 
 
 [tool.poetry.group.dev.dependencies]
