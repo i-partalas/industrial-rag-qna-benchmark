@@ -1,63 +1,69 @@
-"""
-Run with 'streamlit run ./src/interface/ui.py'
-"""
+import time
 
 import streamlit as st
 
-st.title(
-    body="Benchmarking LLMs on Industrial Data",
-    help="Benchmarking both proprietary and open-sourced LLMs hosted on diverse platforms.",
-)
+# Initialize session state to track progress between steps and form inputs
+if "step" not in st.session_state:
+    st.session_state.step = 0
 
-# Create tabs for multiple pages
-tabs = st.tabs(
-    [
-        "Home",
-        "Data",
-        "LLMs",
-        "Metrics",
-        "Evaluation Set",
-        "Hyperparameters",
-        "Evaluation",
-        "Results",
-    ]
-)
 
-# Tab: Home Tab
-with tabs[0]:
-    st.header("Welcome to the Evaluation App")
+def next_step():
+    st.session_state.step += 1
+
+
+def prev_step():
+    st.session_state.step -= 1
+
+
+def reset_wizard():
+    st.session_state.step = 0
+
+
+# Step 0: Home
+if st.session_state.step == 0:
+    st.header(
+        body="Welcome to the Evaluation App",
+        help="Benchmarking both proprietary and open-sourced LLMs hosted on diverse platforms.",
+    )
     st.write(
         "This app allows you to evaluate RAG performance of proprietary and open-sourced LLMs."
     )
     st.image("res/rag_eval_pipeline.png")
+    if st.button("Start"):
+        next_step()
+        st.rerun()
 
-# Tab: Upload Data
-with tabs[1]:
-    st.header("Upload the PDF files")
+
+# Step 1: Upload Data
+elif st.session_state.step == 1:
+    st.header("Step 1: Upload the PDF files")
     uploaded_pdfs = st.file_uploader(
         "Upload the PDF file(s) you want to interact with:",
         type="pdf",
         accept_multiple_files=True,
     )
+    st.button("Back", on_click=prev_step)
 
-# Tab: Select LLMs
-with tabs[2]:
-    st.header("Select the LLMs to Evaluate")
-    # Create two columns: Proprietary and Open-Sourced LLMs
+    # Validation: Ensure at least one PDF file is uploaded
+    if uploaded_pdfs:
+        st.button("Next", on_click=next_step)
+    else:
+        st.warning("Please upload at least one PDF file to proceed.")
+        st.button("Next", on_click=next_step, disabled=True)
+
+# Step 2: Select LLMs
+elif st.session_state.step == 2:
+    st.header("Step 2: Select the LLMs to Evaluate")
+
     col1, col2 = st.columns(2)
 
-    # Proprietary LLMs - Column 1
     with col1:
         st.subheader("Proprietary LLMs")
-        # Radio box to select platform
         platform_choice = st.radio(
             "Select the Platform:",
             ("OpenAI Platform", "AzureOpenAI Platform"),
             key="proprietary_platform",
         )
-
-        # Prompt user for platform credentials
-        st.write("Please provide your credentials below:")
         platform_name_pr = platform_choice.split()[0]
         openai_api_key = st.text_input(
             f"{platform_name_pr} API Key",
@@ -78,22 +84,16 @@ with tabs[2]:
             "API Version", placeholder="Enter the API version"
         )
 
-    # Open-Sourced LLMs - Column 2
     with col2:
         st.subheader("Open-Sourced LLMs")
-        # Radio box with only one option
         platform_choice_os = st.radio(
             "Select the Platform:",
             ("HuggingFace Platform", "Ollama Platform"),
             key="opensource_platform",
             help="Further platforms are to be implemented, such as Ollama.",
         )
-
-        # Handle the platform selection
         platform_name_os = platform_choice_os.split()[0]
         if platform_name_os == "HuggingFace":
-            # Prompt user for platform credentials
-            st.write("Please provide your credentials below:")
             huggingface_api_key = st.text_input(
                 f"{platform_name_os} API Key",
                 placeholder=f"Enter your {platform_name_os} API key",
@@ -107,14 +107,42 @@ with tabs[2]:
                 placeholder="Enter the embedding model name",
             )
         elif platform_name_os == "Ollama":
-            # Display a message to indicate that this platform is not yet implemented
             st.warning(
                 f"The {platform_name_os} Platform is not yet implemented. Please select another platform."
             )
 
-# Tab: Select Metrics
-with tabs[3]:
-    st.header("Select the Evaluation Metrics")
+    # Validation: Ensure required fields for the selected platform are filled
+    proprietary_fields_filled = all(
+        [
+            openai_api_key,
+            openai_llm_name,
+            openai_embedding_model_name,
+            openai_endpoint,
+            openai_api_version,
+        ]
+    )
+    opensource_fields_filled = (
+        platform_name_os == "HuggingFace"
+        and all(
+            [
+                huggingface_api_key,
+                huggingface_llm_name,
+                huggingface_embedding_model_name,
+            ]
+        )
+    ) or platform_name_os == "Ollama"
+
+    st.button("Back", on_click=prev_step)
+    if proprietary_fields_filled or opensource_fields_filled:
+        st.button("Next", on_click=next_step)
+    else:
+        st.warning("Please fill out all required fields to proceed.")
+        st.button("Next", on_click=next_step, disabled=True)
+
+# Step 3: Select Metrics
+elif st.session_state.step == 3:
+    st.header("Step 3: Select the Evaluation Metrics")
+
     metric_families = {
         "Intrinsic": ["Perplexity"],
         "Lexical": ["BLEU", "ROUGE-1", "ROUGE-2", "ROUGE-L", "METEOR"],
@@ -134,74 +162,67 @@ with tabs[3]:
             ],
         },
     }
+    # Track if any metrics are selected
+    all_metrics_selected = False
 
-    # Iterate through each metric family and create a dropdown list for selecting metrics
     for category, metrics in metric_families.items():
-        # Handling LLM-assisted metrics separately as it has sub-categories
         if category == "LLM-assisted":
             st.subheader(f"{category} Metrics")
 
-            # Multiselect for Generation-related metrics
             generation_related_metrics = st.multiselect(
                 "Select Generation-related Metrics:",
                 metrics["Generation-related"],
                 key=f"{category}_generation_related_metrics",
             )
 
-            # Multiselect for Retrieval-related metrics
             retrieval_related_metrics = st.multiselect(
                 "Select Retrieval-related Metrics:",
                 metrics["Retrieval-related"],
                 key=f"{category}_retrieval_related_metrics",
             )
 
-            # Display selected metrics for confirmation or further usage
-            if generation_related_metrics:
-                st.write(
-                    f"Selected Generation-related Metrics: {', '.join(generation_related_metrics)}"
-                )
+            if generation_related_metrics or retrieval_related_metrics:
+                all_metrics_selected = True
 
-            if retrieval_related_metrics:
-                st.write(
-                    f"Selected Retrieval-related Metrics: {', '.join(retrieval_related_metrics)}"
-                )
-
-        # Handling other categories
         else:
             ppl_msg = "Please bare in mind that 'Perplexity' can be calculated only for Open-Sourced LLMs."
             help_msg = ppl_msg if category == "Intrinsic" else None
             st.subheader(f"{category} Metrics", help=help_msg)
-
             selected_metrics = st.multiselect(
                 f"Select {category} Metrics:", metrics, key=f"{category}_metrics"
             )
-
-            # Display selected metrics for confirmation or further usage
             if selected_metrics:
-                st.write(f"Selected {category} Metrics: {', '.join(selected_metrics)}")
+                all_metrics_selected = True
 
-# Tab: Upload/Create Evaluation Set
-# TODO: Complete the help msg
-with tabs[4]:
-    st.header("Upload or Create an Evaluation Dataset")
+    st.button("Back", on_click=prev_step)
+    if all_metrics_selected:
+        st.button("Next", on_click=next_step)
+    else:
+        st.warning("Please select at least one metric to proceed.")
+        st.button("Next", on_click=next_step, disabled=True)
+
+# Step 4: Upload/Create Evaluation Set
+elif st.session_state.step == 4:
+    st.header("Step 4: Upload or Create an Evaluation Dataset")
+
     method_1 = "Upload your own evaluation dataset"
     method_2 = "Generate a synthetic evaluation dataset based on uploaded PDF file(s)"
     choice = st.radio(
         label="Choose the method to proceed with the evaluation dataset:",
         options=(method_1, method_2),
+        # TODO: Complete the help msg
         help="For the structure and format of the file, please advise ...",
     )
 
+    dataset_uploaded = False
     if choice == method_1:
-        # Upload evaluation dataset in Excel format
         uploaded_file = st.file_uploader(
             "Upload your evaluation dataset file:", type="xlsx"
         )
-        if uploaded_file is not None:
+        if uploaded_file:
             st.success(f"Uploaded your evaluation dataset: {uploaded_file.name}")
-
+            dataset_uploaded = True
     elif choice == method_2:
-        # Upload PDF(s) for an artificially created evaluation dataset
         uploaded_pdfs = st.file_uploader(
             "Upload your PDF file(s):", type="pdf", accept_multiple_files=True
         )
@@ -209,10 +230,19 @@ with tabs[4]:
             st.success(
                 f"Uploaded {len(uploaded_pdfs)} PDF file(s) for synthetic dataset generation"
             )
+            dataset_uploaded = True
 
-# Tab: RAG Hyperparameters
-with tabs[5]:
-    st.header("Configure the RAG Hyperparameters")
+    st.button("Back", on_click=prev_step)
+
+    if dataset_uploaded:
+        st.button("Next", on_click=next_step)
+    else:
+        st.warning("Please upload a dataset to proceed.")
+        st.button("Next", on_click=next_step, disabled=True)
+
+# Step 5: Configure Hyperparameters
+elif st.session_state.step == 5:
+    st.header("Step 5: Configure the RAG Hyperparameters")
 
     # Section 1: Preprocessing
     st.subheader("Preprocessing Hyperparameters")
@@ -261,7 +291,6 @@ with tabs[5]:
         step=1,
         help="Number of top documents to retrieve for answering a query.",
     )
-
     # Section 4: Generation
     st.subheader("Generation Hyperparameters")
     model_temperature = st.slider(
@@ -282,7 +311,6 @@ with tabs[5]:
     )
 
     # Section 5: Evaluation
-    # TODO
     st.subheader("Evaluation Hyperparameters")
     eval_model_temperature = st.slider(
         "Model Temperature for Evaluation:",
@@ -293,18 +321,38 @@ with tabs[5]:
         help="Controls the randomness of predictions. Lower values make the model more deterministic.",
     )
 
-    # Button to save configurations
-    if st.button("Save Hyperparameters"):
-        st.success("RAG Hyperparameters saved successfully!")
+    # Ensure hyperparameters are filled
+    if all(
+        [
+            max_text_length,
+            new_after_n_chars,
+            combine_text_under_n_chars,
+            top_k_retrievals,
+            model_temperature,
+            max_tokens,
+        ]
+    ):
+        st.button("Next", on_click=next_step)
+    else:
+        st.warning("Please fill in all hyperparameters.")
+        st.button("Next", on_click=next_step, disabled=True)
 
-# Tab: Evaluate
-with tabs[6]:
-    st.header("Run the Evaluation")
-    st.button("Run Evaluation", type="primary", use_container_width=True)
+    st.button("Back", on_click=prev_step)
 
-# Tab: View Results
-with tabs[7]:
-    st.header("View the Evaluation Results")
+# Step 6: Run the Evaluation
+elif st.session_state.step == 6:
+    st.header("Step 6: Run the Evaluation")
+    if st.button("Run Evaluation"):
+        with st.spinner():
+            time.sleep(5)
+            st.success("Evaluation started successfully!")
+            st.button("Next", on_click=next_step, disabled=False)
+    st.button("Back", on_click=prev_step)
+
+# Step 7: View Results
+elif st.session_state.step == 7:
+    st.header("Step 7: View the Evaluation Results")
     st.write(
         "Once you upload or generate an evaluation set, results will be displayed here."
     )
+    st.button("Restart", on_click=reset_wizard)
