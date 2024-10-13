@@ -36,24 +36,25 @@ if st.session_state.step == 0:
 
 # Step 1: Upload Data
 elif st.session_state.step == 1:
-    st.header("Step 1: Upload the PDF files")
+    st.header("Upload the PDF files")
     uploaded_pdfs = st.file_uploader(
         "Upload the PDF file(s) you want to interact with:",
         type="pdf",
         accept_multiple_files=True,
     )
-    st.button("Back", on_click=prev_step)
+    button_footers = st.columns([1, 1, 8])
+    button_footers[0].button("Back", on_click=prev_step)
 
     # Validation: Ensure at least one PDF file is uploaded
     if uploaded_pdfs:
-        st.button("Next", on_click=next_step)
+        button_footers[1].button("Next", on_click=next_step)
     else:
         st.warning("Please upload at least one PDF file to proceed.")
-        st.button("Next", on_click=next_step, disabled=True)
+        button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 2: Select LLMs
 elif st.session_state.step == 2:
-    st.header("Step 2: Select the LLMs to Evaluate")
+    st.header("Select the LLMs to Evaluate")
 
     col1, col2 = st.columns(2)
 
@@ -132,16 +133,17 @@ elif st.session_state.step == 2:
         )
     ) or platform_name_os == "Ollama"
 
-    st.button("Back", on_click=prev_step)
+    button_footers = st.columns([1, 1, 8])
+    button_footers[0].button("Back", on_click=prev_step)
     if proprietary_fields_filled or opensource_fields_filled:
-        st.button("Next", on_click=next_step)
+        button_footers[1].button("Next", on_click=next_step)
     else:
         st.warning("Please fill out all required fields to proceed.")
-        st.button("Next", on_click=next_step, disabled=True)
+        button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 3: Select Metrics
 elif st.session_state.step == 3:
-    st.header("Step 3: Select the Evaluation Metrics")
+    st.header("Select the Evaluation Metrics")
 
     metric_families = {
         "Intrinsic": ["Perplexity"],
@@ -194,16 +196,17 @@ elif st.session_state.step == 3:
             if selected_metrics:
                 all_metrics_selected = True
 
-    st.button("Back", on_click=prev_step)
+    button_footers = st.columns([1, 1, 8])
+    button_footers[0].button("Back", on_click=prev_step)
     if all_metrics_selected:
-        st.button("Next", on_click=next_step)
+        button_footers[1].button("Next", on_click=next_step)
     else:
+        button_footers[1].button("Next", on_click=next_step, disabled=True)
         st.warning("Please select at least one metric to proceed.")
-        st.button("Next", on_click=next_step, disabled=True)
 
 # Step 4: Upload/Create Evaluation Set
 elif st.session_state.step == 4:
-    st.header("Step 4: Upload or Create an Evaluation Dataset")
+    st.header("Upload or Create an Evaluation Dataset")
 
     method_1 = "Upload your own evaluation dataset"
     method_2 = "Generate a synthetic evaluation dataset based on uploaded PDF file(s)"
@@ -232,17 +235,18 @@ elif st.session_state.step == 4:
             )
             dataset_uploaded = True
 
-    st.button("Back", on_click=prev_step)
+    button_footers = st.columns([1, 1, 8])
+    button_footers[0].button("Back", on_click=prev_step)
 
     if dataset_uploaded:
-        st.button("Next", on_click=next_step)
+        button_footers[1].button("Next", on_click=next_step)
     else:
         st.warning("Please upload a dataset to proceed.")
-        st.button("Next", on_click=next_step, disabled=True)
+        button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 5: Configure Hyperparameters
 elif st.session_state.step == 5:
-    st.header("Step 5: Configure the RAG Hyperparameters")
+    st.header("Configure the RAG Hyperparameters")
 
     # Section 1: Preprocessing
     st.subheader("Preprocessing Hyperparameters")
@@ -322,6 +326,7 @@ elif st.session_state.step == 5:
     )
 
     # Ensure hyperparameters are filled
+    button_footers = st.columns([1, 1, 8])
     if all(
         [
             max_text_length,
@@ -332,26 +337,27 @@ elif st.session_state.step == 5:
             max_tokens,
         ]
     ):
-        st.button("Next", on_click=next_step)
+        button_footers[1].button("Next", on_click=next_step)
     else:
         st.warning("Please fill in all hyperparameters.")
-        st.button("Next", on_click=next_step, disabled=True)
+        button_footers[1].button("Next", on_click=next_step, disabled=True)
 
-    st.button("Back", on_click=prev_step)
+    button_footers[0].button("Back", on_click=prev_step)
 
 # Step 6: Run the Evaluation
 elif st.session_state.step == 6:
-    st.header("Step 6: Run the Evaluation")
-    if st.button("Run Evaluation"):
+    st.header("Run the Evaluation")
+    button_footers = st.columns([1.1, 1.1, 1.1, 6.7])
+    if button_footers[1].button("Run"):
         with st.spinner():
             time.sleep(5)
             st.success("Evaluation started successfully!")
-            st.button("Next", on_click=next_step, disabled=False)
-    st.button("Back", on_click=prev_step)
+            button_footers[2].button("Next", on_click=next_step, disabled=False)
+    button_footers[0].button("Back", on_click=prev_step)
 
 # Step 7: View Results
 elif st.session_state.step == 7:
-    st.header("Step 7: View the Evaluation Results")
+    st.header("View the Evaluation Results")
     st.write(
         "Once you upload or generate an evaluation set, results will be displayed here."
     )
