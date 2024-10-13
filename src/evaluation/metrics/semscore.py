@@ -66,7 +66,7 @@ class EmbeddingModelWrapper:
             num_samples = x.shape[0]
             similarities = [[0 for i in range(num_samples)] for f in range(num_samples)]
             for row in tqdm(range(num_samples)):
-                similarities[row][0 : row + 1] = em.cos(
+                similarities[row][0 : row + 1] = self.cos(
                     x[row].repeat(row + 1, 1), x[0 : row + 1]
                 ).tolist()
             return similarities
@@ -121,7 +121,8 @@ class ModelPredictionGenerator:
                 if msg["role"] == "user":
                     prompts.append(
                         dict(
-                            # prompt: format current messages up to the current user message and add a generation prompt
+                            # prompt: format current messages up to the current
+                            # user message and add a generation prompt
                             prompt=self.tokenizer.apply_chat_template(
                                 conversation[: i + 1],
                                 add_generation_prompt=True,

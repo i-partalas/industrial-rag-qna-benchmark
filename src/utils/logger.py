@@ -23,7 +23,10 @@ def setup_logger():
     # Console handler for user-friendly colored logs
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
-    LOGFORMAT = "%(asctime)s - %(log_color)s%(levelname)-8s%(reset)s - %(log_color)s%(message)s%(reset)s"
+    LOGFORMAT = (
+        "%(asctime)s - %(log_color)s%(levelname)-8s%(reset)s - "
+        "%(log_color)s%(message)s%(reset)s"
+    )
     color_formatter = ColoredFormatter(LOGFORMAT)
     ch.setFormatter(color_formatter)
 

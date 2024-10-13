@@ -109,7 +109,10 @@ elif st.session_state.step == 2:
             )
         elif platform_name_os == "Ollama":
             st.warning(
-                f"The {platform_name_os} Platform is not yet implemented. Please select another platform."
+                (
+                    f"The {platform_name_os} Platform is not yet implemented. "
+                    "Please select another platform."
+                )
             )
 
     # Validation: Ensure required fields for the selected platform are filled
@@ -187,7 +190,10 @@ elif st.session_state.step == 3:
                 all_metrics_selected = True
 
         else:
-            ppl_msg = "Please bare in mind that 'Perplexity' can be calculated only for Open-Sourced LLMs."
+            ppl_msg = (
+                "Please bare in mind that 'Perplexity' "
+                "can be calculated only for Open-Sourced LLMs."
+            )
             help_msg = ppl_msg if category == "Intrinsic" else None
             st.subheader(f"{category} Metrics", help=help_msg)
             selected_metrics = st.multiselect(
@@ -256,7 +262,10 @@ elif st.session_state.step == 5:
         max_value=5000,
         value=4000,
         step=100,
-        help="Cuts off new sections after reaching a length of n characters. (This is a hard maximum.)",
+        help=(
+            "Cuts off new sections after reaching a length of n characters. "
+            "(This is a hard maximum.)"
+        ),
     )
     new_after_n_chars = st.number_input(
         "Soft Maximum Characters for New Sections:",
@@ -264,7 +273,11 @@ elif st.session_state.step == 5:
         max_value=5000,
         value=3800,
         step=100,
-        help="Applies only when the chunking strategy is specified. Cuts off new sections after reaching a length of n characters. (This is a soft maximum.)",
+        help=(
+            "Applies only when the chunking strategy is specified. "
+            "Cuts off new sections after reaching a length of n characters. "
+            "(This is a soft maximum.)"
+        ),
     )
     combine_text_under_n_chars = st.number_input(
         "Combine Text under n Characters:",
@@ -272,7 +285,14 @@ elif st.session_state.step == 5:
         max_value=5000,
         value=2000,
         step=100,
-        help="Combine small sections. In certain documents, partitioning may identify a list-item or other short paragraph as a Title element even though it does not serve as a section heading. This can produce chunks substantially smaller than desired. This behavior can be mitigated using the combine_text_under_n_chars argument. Setting this to 0 will disable section combining.",
+        help=(
+            "Combine small sections. In certain documents, partitioning may identify "
+            "a list-item or other short paragraph as a Title element even though it "
+            "does not serve as a section heading. "
+            "This can produce chunks substantially smaller than desired. "
+            "This behavior can be mitigated using the combine_text_under_n_chars argument. "
+            "Setting this to 0 will disable section combining."
+        ),
     )
 
     # Section 2: Indexing
@@ -303,7 +323,10 @@ elif st.session_state.step == 5:
         max_value=1.0,
         value=0.2,
         step=0.05,
-        help="Controls the randomness of predictions. Lower values make the model more deterministic.",
+        help=(
+            "Controls the randomness of predictions. "
+            "Lower values make the model more deterministic."
+        ),
     )
     max_tokens = st.number_input(
         "Maximum Tokens:",
@@ -322,7 +345,10 @@ elif st.session_state.step == 5:
         max_value=1.0,
         value=0.2,
         step=0.05,
-        help="Controls the randomness of predictions. Lower values make the model more deterministic.",
+        help=(
+            "Controls the randomness of predictions. "
+            "Lower values make the model more deterministic."
+        ),
     )
 
     # Ensure hyperparameters are filled

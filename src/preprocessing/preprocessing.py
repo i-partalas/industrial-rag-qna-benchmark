@@ -29,7 +29,8 @@ class PDFChunker:
 
     def _extract_queried_pdf_names(self) -> Dict[str, str]:
         """
-        Extracts the filenames that are queried based on the names listed in the evalset DataFrame.
+        Extracts the filenames that are queried based on the names listed
+        in the evalset DataFrame.
 
         :return: A dictionary mapping PDF filenames to their full file paths.
         """
