@@ -3,6 +3,8 @@ from typing import Dict, List
 from uuid import uuid4
 
 import pandas as pd
+import pymupdf4llm
+from langchain.text_splitter import MarkdownTextSplitter
 from langchain_core.documents import Document
 from tqdm import tqdm
 from unstructured.documents.elements import Element
@@ -100,6 +102,20 @@ class PDFChunker:
             Document(page_content=chunk.text, metadata=chunk.metadata.to_dict())
             for chunk in chunks
         ]
+        return docs
+
+    def _pymupdf_chunk_pdf(self, filepath: str) -> List[Document]:
+        """
+        Chunks a single PDF file into document elements, using PyMuPDF.
+        Standard text and tables are detected and organized in the correct reading sequence.
+        The extracted content is then converted to GitHub-compatible Markdown text.
+
+        :param filepath: Path to the PDF file.
+        :return: A list of document elements extracted from the PDF.
+        """
+        md_text = pymupdf4llm.to_markdown(filepath)
+        splitter = MarkdownTextSplitter(chunk_size=4000, chunk_overlap=0)
+        docs = splitter.create_documents([md_text])
         return docs
 
     def chunk_pdfs(self) -> None:
