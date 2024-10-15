@@ -2,6 +2,8 @@ import time
 
 import streamlit as st
 
+import src.utils.suppress_warnings  # noqa: F401
+
 # Initialize session state to track progress between steps and form inputs
 if "step" not in st.session_state:
     st.session_state.step = 0
