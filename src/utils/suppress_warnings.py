@@ -1,3 +1,4 @@
+import logging
 import os
 import warnings
 
@@ -11,3 +12,6 @@ warnings.filterwarnings(
     message="You are using deepeval version",
     module="deepeval",
 )
+
+# Silence logger warnings from the Unstructured module
+logging.getLogger("unstructured").setLevel(logging.ERROR)
