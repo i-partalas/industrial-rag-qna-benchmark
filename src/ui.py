@@ -1,8 +1,12 @@
+"""
+Run with 'streamlit run src/ui.py'
+"""
+
 import time
 
 import streamlit as st
 
-import src.utils.suppress_warnings  # noqa: F401
+import utils.suppress_warnings  # noqa: F401
 
 # Initialize session state to track progress between steps and form inputs
 if "step" not in st.session_state:
@@ -48,11 +52,12 @@ elif st.session_state.step == 1:
     button_footers[0].button("Back", on_click=prev_step)
 
     # Validation: Ensure at least one PDF file is uploaded
-    if uploaded_pdfs:
-        button_footers[1].button("Next", on_click=next_step)
-    else:
-        st.warning("Please upload at least one PDF file to proceed.")
-        button_footers[1].button("Next", on_click=next_step, disabled=True)
+    button_footers[1].button("Next", on_click=next_step)
+    # if uploaded_pdfs:
+    #     button_footers[1].button("Next", on_click=next_step)
+    # else:
+    #     st.warning("Please upload at least one PDF file to proceed.")
+    #     button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 2: Select LLMs
 elif st.session_state.step == 2:
@@ -140,11 +145,13 @@ elif st.session_state.step == 2:
 
     button_footers = st.columns([1, 1, 8])
     button_footers[0].button("Back", on_click=prev_step)
-    if proprietary_fields_filled or opensource_fields_filled:
-        button_footers[1].button("Next", on_click=next_step)
-    else:
-        st.warning("Please fill out all required fields to proceed.")
-        button_footers[1].button("Next", on_click=next_step, disabled=True)
+
+    button_footers[1].button("Next", on_click=next_step)
+    # if proprietary_fields_filled or opensource_fields_filled:
+    #     button_footers[1].button("Next", on_click=next_step)
+    # else:
+    #     st.warning("Please fill out all required fields to proceed.")
+    #     button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 3: Select Metrics
 elif st.session_state.step == 3:
@@ -206,11 +213,13 @@ elif st.session_state.step == 3:
 
     button_footers = st.columns([1, 1, 8])
     button_footers[0].button("Back", on_click=prev_step)
-    if all_metrics_selected:
-        button_footers[1].button("Next", on_click=next_step)
-    else:
-        button_footers[1].button("Next", on_click=next_step, disabled=True)
-        st.warning("Please select at least one metric to proceed.")
+
+    button_footers[1].button("Next", on_click=next_step)
+    # if all_metrics_selected:
+    #     button_footers[1].button("Next", on_click=next_step)
+    # else:
+    #     button_footers[1].button("Next", on_click=next_step, disabled=True)
+    #     st.warning("Please select at least one metric to proceed.")
 
 # Step 4: Upload/Create Evaluation Set
 elif st.session_state.step == 4:
@@ -246,11 +255,12 @@ elif st.session_state.step == 4:
     button_footers = st.columns([1, 1, 8])
     button_footers[0].button("Back", on_click=prev_step)
 
-    if dataset_uploaded:
-        button_footers[1].button("Next", on_click=next_step)
-    else:
-        st.warning("Please upload a dataset to proceed.")
-        button_footers[1].button("Next", on_click=next_step, disabled=True)
+    button_footers[1].button("Next", on_click=next_step)
+    # if dataset_uploaded:
+    #     button_footers[1].button("Next", on_click=next_step)
+    # else:
+    #     st.warning("Please upload a dataset to proceed.")
+    #     button_footers[1].button("Next", on_click=next_step, disabled=True)
 
 # Step 5: Configure Hyperparameters
 elif st.session_state.step == 5:
@@ -372,14 +382,14 @@ elif st.session_state.step == 5:
 
     button_footers[0].button("Back", on_click=prev_step)
 
-# Step 6: Run the Evaluation
+# Step 6: Run the App
 elif st.session_state.step == 6:
-    st.header("Run the Evaluation")
+    st.header("Run the Application")
     button_footers = st.columns([1.1, 1.1, 1.1, 6.7])
     if button_footers[1].button("Run"):
         with st.spinner():
             time.sleep(5)
-            st.success("Evaluation started successfully!")
+            st.success("Application started successfully!")
             button_footers[2].button("Next", on_click=next_step, disabled=False)
     button_footers[0].button("Back", on_click=prev_step)
 
