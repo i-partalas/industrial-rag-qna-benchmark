@@ -12,6 +12,36 @@ from steps import (
     step7_results,
 )
 
+
+def display_step_indicator():
+    steps = [
+        "Step 1: Home",
+        "Step 2: Upload Data",
+        "Step 3: Select LLMs",
+        "Step 4: Select Metrics",
+        "Step 5: Upload/Create Dataset",
+        "Step 6: Configure Hyperparameters",
+        "Step 7: Run the Evaluation",
+        "Step 8: View the Results",
+    ]
+
+    # Current step (0-based index)
+    current_step = st.session_state.step
+
+    # Display steps in the sidebar
+    st.sidebar.header("Navigation")
+    for i, step in enumerate(steps):
+        # Highlight the current step
+        if i == current_step:
+            st.sidebar.write(f"**➡️ {step}**")
+        # Mark completed steps
+        elif i < current_step:
+            st.sidebar.write(f"✅ {step}")
+        # Indicate forthcoming steps
+        else:
+            st.sidebar.write(f"🔜 {step}")
+
+
 # Initialize session state to track progress between steps and form inputs
 if "step" not in st.session_state:
     st.session_state.step = 0
@@ -28,6 +58,9 @@ def prev_step():
 def reset_wizard():
     st.session_state.step = 0
 
+
+# Show step indicator in the sidebar
+display_step_indicator()
 
 # Step Flow
 if st.session_state.step == 0:
