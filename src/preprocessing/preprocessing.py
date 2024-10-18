@@ -32,9 +32,9 @@ class PDFProcessor:
         self.report_path = report_path
 
         logger.info("Starting to process PDF files.")
-        self.save_files()
+        self._save_files()
 
-    def get_filepath(self, file: UploadedFile) -> Path:
+    def _get_filepath(self, file: UploadedFile) -> Path:
         """
         Generates the file path for a given uploaded file within the PDF directory.
 
@@ -43,7 +43,7 @@ class PDFProcessor:
         """
         return self.pdf_dir / file.name
 
-    def save_files(self) -> None:
+    def _save_files(self) -> None:
         """
         Saves the uploaded files to the designated PDF directory.
         """
@@ -51,14 +51,14 @@ class PDFProcessor:
 
         for file in tqdm(self.files, desc="Saving PDF files", unit=" file"):
             try:
-                filepath = self.get_filepath(file)
+                filepath = self._get_filepath(file)
                 with open(filepath, "wb") as f:
                     f.write(file.getbuffer())
                 logger.info(f"File {file.name} saved successfully.")
             except Exception as e:
                 logger.error(f"Failed to save file {file.name}: {e}")
 
-    def save_docs(self, docs: List[Document]) -> None:
+    def _save_docs(self, docs: List[Document]) -> None:
         """
         Saves the list of Document instances to a JSON file.
 
@@ -72,7 +72,7 @@ class PDFProcessor:
         except Exception as e:
             logger.error(f"Failed to save documents to {self.report_path}: {e}")
 
-    def create_custom_loader(self) -> type:
+    def _create_custom_loader(self) -> type:
         """
         Creates a custom file loader class with 'elements' mode as the default for chunking.
 
@@ -87,7 +87,7 @@ class PDFProcessor:
 
         return CustomFileLoader
 
-    def get_loader_configuration(self) -> Dict[str, Any]:
+    def _get_loader_configuration(self) -> Dict[str, Any]:
         """
         Provides configuration settings for the DirectoryLoader used for chunking the PDFs.
 
@@ -104,7 +104,7 @@ class PDFProcessor:
             "combine_text_under_n_chars": 2000,
         }
 
-    def load_documents(
+    def _load_documents(
         self, loader_cls: UnstructuredFileLoader, loader_kwargs: Dict[str, Any]
     ) -> List[Document]:
         """
@@ -139,12 +139,12 @@ class PDFProcessor:
         :return: A list of chunked Document instances.
         """
         logger.info("Starting the chunking process.")
-        custom_loader_cls = self.create_custom_loader()
-        loader_kwargs = self.get_loader_configuration()
+        custom_loader_cls = self._create_custom_loader()
+        loader_kwargs = self._get_loader_configuration()
 
-        docs = self.load_documents(custom_loader_cls, loader_kwargs)
+        docs = self._load_documents(custom_loader_cls, loader_kwargs)
         if docs:
-            self.save_docs(docs)
+            self._save_docs(docs)
 
         logger.info("Chunking process completed.")
         return docs
