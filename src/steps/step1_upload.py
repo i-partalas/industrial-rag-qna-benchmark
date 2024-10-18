@@ -13,7 +13,8 @@ def display(prev_step, next_step):
 
     # Validation: Ensure at least one PDF file is uploaded
     button_footers[1].button("Next", on_click=next_step)
-    # if uploaded_pdfs:
+    if uploaded_pdfs:
+        st.session_state.uploaded_pdfs = uploaded_pdfs
     #     button_footers[1].button("Next", on_click=next_step)
     # else:
     #     st.warning("Please upload at least one PDF file to proceed.")

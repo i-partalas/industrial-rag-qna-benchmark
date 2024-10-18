@@ -15,3 +15,6 @@ warnings.filterwarnings(
 
 # Silence logger warnings from the Unstructured module
 logging.getLogger("unstructured").setLevel(logging.ERROR)
+
+# Silence logger warnings from the PDFMiner module
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
