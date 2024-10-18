@@ -1,132 +1,150 @@
-import os
-from typing import Dict, List
-from uuid import uuid4
+import json
+from pathlib import Path
+from typing import Any, Dict, List
 
-import pandas as pd
-import pymupdf4llm
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain_community.document_loaders import DirectoryLoader, UnstructuredFileLoader
 from langchain_core.documents import Document
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 from tqdm import tqdm
-from unstructured.documents.elements import Element
-from unstructured.partition.pdf import partition_pdf
+
+from config.setup_paths import CHUNKS_REPORT, PDF_DIR
+from utils.helper_functions import determine_max_concurrency
+from utils.logger import logger
 
 
-class PDFChunker:
-    def __init__(self, evalset_path: str, pdf_path: str) -> None:
-        """
-        Initializes the PDFChunker with paths to an Excel file containing references
-        and a directory containing PDF files to be processed.
-
-        :param evalset_path: Path to an Excel file with gold-standard references.
-        :param pdf_path: Path to the directory containing PDF files.
-        """
-        self.evalset_df = self._read_data(evalset_path)
-        self.pdf_path = pdf_path
-
-    def _read_data(self, path: str) -> pd.DataFrame:
-        df = pd.read_excel(path)
-        df.columns = df.columns.str.lower()
-        df = df.fillna("")
-        return df
-
-    def _extract_queried_pdf_names(self) -> Dict[str, str]:
-        """
-        Extracts the filenames that are queried based on the names listed
-        in the evalset DataFrame.
-
-        :return: A dictionary mapping PDF filenames to their full file paths.
-        """
-        fname_to_fpath = {}
-        queried_pdf_names = self.evalset_df["doc_name"].tolist()
-        for root, _, filenames in os.walk(self.pdf_path, topdown=True):
-            for filename in filenames:
-                if filename.endswith(".pdf") and filename in queried_pdf_names:
-                    fname_to_fpath[filename] = os.path.join(root, filename)
-        return fname_to_fpath
-
-    def prepare_evalset_df(self) -> None:
-        """
-        Updates the evalset DataFrame with file paths for the PDF documents listed
-        in the reference sheet. Also simplifies the DataFrame by removing unnecessary
-        columns and duplicates.
-        """
-        fname_to_fpath = self._extract_queried_pdf_names()
-        self.evalset_df["filepath"] = self.evalset_df["doc_name"].map(fname_to_fpath)
-        self.evalset_df.drop(
-            self.evalset_df.columns[[0, 1, 2, 3, -2]], axis=1, inplace=True
-        )
-        self.evalset_df.drop_duplicates(
-            subset=["filepath"], inplace=True, ignore_index=True
-        )
-
-    def _insert_data_to_df(
-        self, row_idx: int, chunks: List[Element], lang: str
+class PDFProcessor:
+    def __init__(
+        self,
+        files: List[UploadedFile],
+        pdf_dir: Path = PDF_DIR,
+        report_path: Path = CHUNKS_REPORT,
     ) -> None:
         """
-        Inserts chunk data into the evalset DataFrame at the specified row.
+        Initializes the PDFProcessor with the list of uploaded files,
+        and optional paths for the PDF directory and the report file.
 
-        :param row_idx: The index of the row in the DataFrame to update.
-        :param chunks: The list of document elements extracted from the PDF.
-        :param lang: The language of the document.
+        :param files: A list of UploadedFile instances.
+        :param pdf_dir: The directory where PDFs will be saved.
+        :param report_path: The file path where the JSON report will be saved.
         """
-        lang = lang.lower()
-        cols = ["texts", "ids"]
-        for col in cols:
-            if col not in self.evalset_df.columns:
-                self.evalset_df[col] = None
+        self.files = files
+        self.pdf_dir = pdf_dir
+        self.report_path = report_path
 
-        chunk_texts = set([chunk.text for chunk in chunks])
-        chunk_ids = [str(uuid4()) for _ in chunk_texts]
-        self.evalset_df.at[row_idx, "texts"] = chunk_texts
-        self.evalset_df.at[row_idx, "ids"] = chunk_ids
+        logger.info("Starting to process PDF files.")
+        self.save_files()
 
-    def _unstructured_chunk_pdf(self, filepath: str) -> List[Document]:
+    def get_filepath(self, file: UploadedFile) -> Path:
         """
-        Chunks a single PDF file into elements.
+        Generates the file path for a given uploaded file within the PDF directory.
 
-        :param filepath: Path to the PDF file.
-        :return: A list of document elements extracted from the PDF.
+        :param file: An instance of UploadedFile representing the uploaded file.
+        :return: The complete file path where the file will be saved.
         """
-        chunks: List[Element] = partition_pdf(
-            filename=filepath,
-            extract_images_in_pdf=False,
-            strategy="hi_res",
-            infer_table_structure=True,
-            languages=["deu", "eng"],
-            chunking_strategy="by_title",
-            max_characters=4000,
-            new_after_n_chars=3800,
-            combine_text_under_n_chars=2000,
+        return self.pdf_dir / file.name
+
+    def save_files(self) -> None:
+        """
+        Saves the uploaded files to the designated PDF directory.
+        """
+        logger.info("Saving uploaded files to the directory.")
+
+        for file in tqdm(self.files, desc="Saving PDF files", unit=" file"):
+            try:
+                filepath = self.get_filepath(file)
+                with open(filepath, "wb") as f:
+                    f.write(file.getbuffer())
+                logger.info(f"File {file.name} saved successfully.")
+            except Exception as e:
+                logger.error(f"Failed to save file {file.name}: {e}")
+
+    def save_docs(self, docs: List[Document]) -> None:
+        """
+        Saves the list of Document instances to a JSON file.
+
+        :param docs: A list of Document instances.
+        """
+        try:
+            json_docs = [doc.to_json() for doc in docs]
+            with open(self.report_path, "w") as f:
+                json.dump(json_docs, f, indent=4)
+            logger.info(f"Documents saved to {self.report_path}.")
+        except Exception as e:
+            logger.error(f"Failed to save documents to {self.report_path}: {e}")
+
+    def create_custom_loader(self) -> type:
+        """
+        Creates a custom file loader class with 'elements' mode as the default for chunking.
+
+        :return: A subclass of UnstructuredFileLoader with custom settings.
+        """
+        logger.info("Creating custom file loader.")
+
+        class CustomFileLoader(UnstructuredFileLoader):
+            def __init__(self, *args, **kwargs):
+                kwargs["mode"] = "elements"
+                super().__init__(*args, **kwargs)
+
+        return CustomFileLoader
+
+    def get_loader_configuration(self) -> Dict[str, Any]:
+        """
+        Provides configuration settings for the DirectoryLoader used for chunking the PDFs.
+
+        :return: A dictionary containing loader configuration settings.
+        """
+        logger.info("Fetching loader configuration settings.")
+        return {
+            "extract_images_in_pdf": False,
+            "strategy": "hi_res",
+            "languages": ["eng"],
+            "chunking_strategy": "by_title",
+            "max_characters": 4000,
+            "new_after_n_chars": 3800,
+            "combine_text_under_n_chars": 2000,
+        }
+
+    def load_documents(
+        self, loader_cls: UnstructuredFileLoader, loader_kwargs: Dict[str, Any]
+    ) -> List[Document]:
+        """
+        Loads documents from the PDF directory using the provided loader class and settings.
+
+        :param loader_cls: The loader class to be used for loading documents.
+        :param loader_kwargs: A dictionary of arguments for configuring the loader.
+        :return: A list of loaded Document instances.
+        """
+        logger.info("Initializing DirectoryLoader to load documents.")
+        loader = DirectoryLoader(
+            path=self.pdf_dir,
+            loader_cls=loader_cls,
+            loader_kwargs=loader_kwargs,
+            show_progress=True,
+            use_multithreading=True,
+            max_concurrency=determine_max_concurrency(),
         )
-        docs: List[Document] = [
-            Document(page_content=chunk.text, metadata=chunk.metadata.to_dict())
-            for chunk in chunks
-        ]
+
+        try:
+            docs = loader.load()
+            logger.info("Documents loaded successfully.")
+            return docs
+        except Exception as e:
+            logger.error(f"Failed to load documents: {e}")
+            return []
+
+    def chunk_files2docs(self) -> List[Document]:
+        """
+        Orchestrates the process of splitting PDF files into smaller document chunks.
+
+        :return: A list of chunked Document instances.
+        """
+        logger.info("Starting the chunking process.")
+        custom_loader_cls = self.create_custom_loader()
+        loader_kwargs = self.get_loader_configuration()
+
+        docs = self.load_documents(custom_loader_cls, loader_kwargs)
+        if docs:
+            self.save_docs(docs)
+
+        logger.info("Chunking process completed.")
         return docs
-
-    def _pymupdf_chunk_pdf(self, filepath: str) -> List[Document]:
-        """
-        Chunks a single PDF file into document elements, using PyMuPDF.
-        Standard text and tables are detected and organized in the correct reading sequence.
-        The extracted content is then converted to GitHub-compatible Markdown text.
-
-        :param filepath: Path to the PDF file.
-        :return: A list of document elements extracted from the PDF.
-        """
-        md_text = pymupdf4llm.to_markdown(filepath)
-        splitter = MarkdownTextSplitter(chunk_size=4000, chunk_overlap=0)
-        docs = splitter.create_documents([md_text])
-        return docs
-
-    def chunk_pdfs(self) -> None:
-        """
-        Processes each PDF file listed in the evalset DataFrame, chunks it,
-        and stores the chunk data back into the DataFrame.
-        """
-        for index, row in tqdm(
-            self.evalset_df.iterrows(), desc="Processing PDFs", unit=" PDF"
-        ):
-            filepath = row["filepath"]
-            lang = row["language"]
-            docs = self._unstructured_chunk_pdf(filepath)
-            self._insert_data_to_df(index, docs, lang)
