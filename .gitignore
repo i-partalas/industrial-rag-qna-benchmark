@@ -3,3 +3,9 @@
 
 # Ignore Python bytecode files
 *.pyc
+
+# Ignore PDF files
+*.pdf
+
+# Ignore specific JSON files
+chunks_report.json
