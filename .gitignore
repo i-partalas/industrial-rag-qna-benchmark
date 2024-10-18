@@ -9,3 +9,6 @@
 
 # Ignore specific JSON files
 chunks_report.json
+
+# Ignore logging files
+*.log
