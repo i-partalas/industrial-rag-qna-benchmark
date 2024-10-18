@@ -9,7 +9,7 @@ def display(next_step):
     st.write(
         "This app allows you to evaluate RAG performance of proprietary and open-sourced LLMs."
     )
-    st.image("res/rag_eval_pipeline.png")
+    st.image("res/images/rag_eval_pipeline.png")
     if st.button("Start"):
         next_step()
         st.rerun()
