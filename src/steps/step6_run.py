@@ -13,7 +13,7 @@ def display(prev_step, next_step):
             # Run preprocessing
             st.write("Chunking PDF content into elements...")
             pdf_processor = PDFProcessor(st.session_state.uploaded_pdfs)
-            docs = pdf_processor.chunk_files2docs()  # noqa: F841
+            docs = pdf_processor.chunk_files_to_docs()  # noqa: F841
 
             st.write("Creating synthetic data...")
             st.write("Generating answers with LLM...")

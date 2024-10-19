@@ -132,7 +132,7 @@ class PDFProcessor:
             logger.error(f"Failed to load documents: {e}")
             return []
 
-    def chunk_files2docs(self) -> List[Document]:
+    def chunk_files_to_docs(self) -> List[Document]:
         """
         Orchestrates the process of splitting PDF files into smaller document chunks.
 
