@@ -17,3 +17,10 @@ CHUNKS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Define the filepath where the chunk documents get saved
 CHUNKS_REPORT = CHUNKS_DIR / "chunks_report.json"
+
+# Define and create the path to the 'testset' directory
+TESTSET_DIR = ROOT_ABSPATH / "res" / "testset"
+TESTSET_DIR.mkdir(parents=True, exist_ok=True)
+
+# Define the filepath where the testset gets saved
+TESTSET_FILE = TESTSET_DIR / "testset.xlsx"
