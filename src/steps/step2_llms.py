@@ -26,11 +26,14 @@ def display(prev_step, next_step):
             "Proprietary Embedding Model Name",
             placeholder="Enter the embedding model name",
         )
+        # If OpenAI is chosen, disable "endpoint" and "api_version" fields
+        disabled = True if platform_name_pr == "OpenAI" else False
+
         openai_endpoint = st.text_input(
-            "Endpoint", placeholder="Enter the API endpoint"
+            "Endpoint", placeholder="Enter the API endpoint", disabled=disabled
         )
         openai_api_version = st.text_input(
-            "API Version", placeholder="Enter the API version"
+            "API Version", placeholder="Enter the API version", disabled=disabled
         )
 
     with col2:
@@ -88,7 +91,7 @@ def display(prev_step, next_step):
     button_footers[0].button("Back", on_click=prev_step)
 
     button_footers[1].button("Next", on_click=next_step)
-    # if proprietary_fields_filled or opensource_fields_filled:
+    # if proprietary_fields_filled and opensource_fields_filled:
     #     button_footers[1].button("Next", on_click=next_step)
     # else:
     #     st.warning("Please fill out all required fields to proceed.")
