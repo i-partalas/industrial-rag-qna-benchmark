@@ -33,7 +33,6 @@ azure_chat_llm = AzureChatOpenAI(
 openai_embed_model = OpenAIEmbeddings(
     model=settings.openai_embed_model,
     api_key=settings.openai_api_key,
-    temperature=0.2,
 )
 
 openai_llm = OpenAI(
