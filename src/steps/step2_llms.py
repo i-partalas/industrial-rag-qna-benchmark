@@ -58,6 +58,13 @@ def display(prev_step, next_step):
                 "Open-Sourced Embedding Model Name",
                 placeholder="Enter the embedding model name",
             )
+            # If huggingface_embedding_model_name is not provided, fallback to OpenAI
+            if not huggingface_embedding_model_name:
+                st.info(
+                    f"No {platform_name_os} embedding model specified. "
+                    f"The {platform_name_pr} embedding model will be used as a fallback."
+                )
+
         elif platform_name_os == "Ollama":
             st.warning(
                 (
@@ -67,29 +74,38 @@ def display(prev_step, next_step):
             )
 
     # Validation: Ensure required fields for the selected platform are filled
-    proprietary_fields_filled = all(
-        [
-            openai_api_key,
-            openai_llm_name,
-            openai_embedding_model_name,
-            openai_endpoint,
-            openai_api_version,
-        ]
-    )
+    # Proprietary fields
+    proprietary_fields = [
+        openai_api_key,
+        openai_llm_name,
+        openai_embedding_model_name,
+        openai_endpoint,
+        openai_api_version,
+    ]
+    # Remove endpoint and api_version from validation if OpenAI is the platform
+    if platform_name_pr == "OpenAI":
+        for field in (openai_endpoint, openai_api_version):
+            proprietary_fields.remove(field)
+    # Fields used in validation
+    proprietary_fields_filled = all(proprietary_fields)
+
+    # Open-sourced fields
+    opensource_fields = [
+        huggingface_api_key,
+        huggingface_llm_name,
+        huggingface_embedding_model_name,
+    ]
+    # Remove open-sourced embedding model from validation if no value inserted
+    if not huggingface_embedding_model_name:
+        opensource_fields.remove(huggingface_embedding_model_name)
+    # Fields used in validation
     opensource_fields_filled = (
-        platform_name_os == "HuggingFace"
-        and all(
-            [
-                huggingface_api_key,
-                huggingface_llm_name,
-                huggingface_embedding_model_name,
-            ]
-        )
+        platform_name_os == "HuggingFace" and all(opensource_fields)
     ) or platform_name_os == "Ollama"
 
+    # Roaming buttons
     button_footers = st.columns([1, 1, 8])
     button_footers[0].button("Back", on_click=prev_step)
-
     button_footers[1].button("Next", on_click=next_step)
     # if proprietary_fields_filled and opensource_fields_filled:
     #     button_footers[1].button("Next", on_click=next_step)
