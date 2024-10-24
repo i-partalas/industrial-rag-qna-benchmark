@@ -8,19 +8,21 @@ def display(prev_step, next_step):
 
     with col1:
         st.subheader("Proprietary LLMs")
-        platform_choice = st.radio(
+        platform_choice_pr = st.radio(
             "Select the Platform:",
-            ("OpenAI Platform", "AzureOpenAI Platform"),
-            key="proprietary_platform",
+            ("OpenAI", "AzureOpenAI"),
         )
-        platform_name_pr = platform_choice.split()[0]
+        platform_name_pr = platform_choice_pr.split()[0]
+        st.session_state.proprietary_platform = platform_name_pr
+
         openai_api_key = st.text_input(
             f"{platform_name_pr} API Key",
             placeholder=f"Enter your {platform_name_pr} API key",
             type="password",
         )
         openai_llm_name = st.text_input(
-            "Proprietary LLM Name", placeholder="Enter the LLM name"
+            "Proprietary LLM Name",
+            placeholder="Enter the LLM name",
         )
         openai_embedding_model_name = st.text_input(
             "Proprietary Embedding Model Name",
@@ -30,10 +32,14 @@ def display(prev_step, next_step):
         disabled = True if platform_name_pr == "OpenAI" else False
 
         openai_endpoint = st.text_input(
-            "Endpoint", placeholder="Enter the API endpoint", disabled=disabled
+            "Endpoint",
+            placeholder="Enter the API endpoint",
+            disabled=disabled,
         )
         openai_api_version = st.text_input(
-            "API Version", placeholder="Enter the API version", disabled=disabled
+            "API Version",
+            placeholder="Enter the API version",
+            disabled=disabled,
         )
 
     with col2:
@@ -72,7 +78,6 @@ def display(prev_step, next_step):
                     "Please select another platform."
                 )
             )
-
     # Validation: Ensure required fields for the selected platform are filled
     # Proprietary fields
     proprietary_fields = [
