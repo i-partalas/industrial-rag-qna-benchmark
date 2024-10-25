@@ -50,11 +50,11 @@ def prepare_session_state():
         st.session_state.uploaded_pdfs = None
     # LLMs session variables (proprietary)
     if "proprietary_platform" not in st.session_state:
-        st.session_state.proprietary_platform = None
-    if "openai_llm_name" not in st.session_state:
-        st.session_state.openai_llm_name = None
+        st.session_state.proprietary_platform = "OpenAI"
     if "openai_api_key" not in st.session_state:
         st.session_state.openai_api_key = None
+    if "openai_llm_name" not in st.session_state:
+        st.session_state.openai_llm_name = None
     if "openai_embedding_model_name" not in st.session_state:
         st.session_state.openai_embedding_model_name = None
     if "openai_endpoint" not in st.session_state:
@@ -62,14 +62,14 @@ def prepare_session_state():
     if "openai_api_version" not in st.session_state:
         st.session_state.openai_api_version = None
     # LLMs session variables (open-sourced)
-    if "opensourced_platform" not in st.session_state:
-        st.session_state.opensourced_platform = None
-    if "opensourced_llm_name" not in st.session_state:
-        st.session_state.opensourced_llm_name = None
-    if "opensourced_api_key" not in st.session_state:
-        st.session_state.opensourced_api_key = None
-    if "opensourced_embedding_model_name" not in st.session_state:
-        st.session_state.opensourced_embedding_model_name = None
+    if "opensource_platform" not in st.session_state:
+        st.session_state.opensource_platform = "HuggingFace"
+    if "opensource_api_key" not in st.session_state:
+        st.session_state.opensource_api_key = None
+    if "opensource_llm_name" not in st.session_state:
+        st.session_state.opensource_llm_name = None
+    if "opensource_embedding_model_name" not in st.session_state:
+        st.session_state.opensource_embedding_model_name = None
 
 
 def next_step():

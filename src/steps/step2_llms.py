@@ -9,72 +9,78 @@ def display(prev_step, next_step):
     with col1:
         st.subheader("Proprietary LLMs")
         platform_choice_pr = st.radio(
-            "Select the Platform:",
-            ("OpenAI", "AzureOpenAI"),
+            label="Select the Platform:",
+            options=("OpenAI", "AzureOpenAI"),
+            key="proprietary_platform",
         )
-        platform_name_pr = platform_choice_pr.split()[0]
-        st.session_state.proprietary_platform = platform_name_pr
-
         openai_api_key = st.text_input(
-            f"{platform_name_pr} API Key",
-            placeholder=f"Enter your {platform_name_pr} API key",
+            label=f"{platform_choice_pr} API Key",
+            placeholder=f"Enter your {platform_choice_pr} API key",
             type="password",
+            key="openai_api_key",
         )
         openai_llm_name = st.text_input(
-            "Proprietary LLM Name",
+            label="Proprietary LLM Name",
             placeholder="Enter the LLM name",
+            key="openai_llm_name",
         )
         openai_embedding_model_name = st.text_input(
-            "Proprietary Embedding Model Name",
+            label="Proprietary Embedding Model Name",
             placeholder="Enter the embedding model name",
+            key="openai_embedding_model_name",
         )
         # If OpenAI is chosen, disable "endpoint" and "api_version" fields
-        disabled = True if platform_name_pr == "OpenAI" else False
+        disabled = True if platform_choice_pr == "OpenAI" else False
 
         openai_endpoint = st.text_input(
-            "Endpoint",
+            label="Endpoint",
             placeholder="Enter the API endpoint",
             disabled=disabled,
+            key="openai_endpoint",
         )
         openai_api_version = st.text_input(
-            "API Version",
+            label="API Version",
             placeholder="Enter the API version",
             disabled=disabled,
+            key="openai_api_version",
         )
 
     with col2:
         st.subheader("Open-Sourced LLMs")
         platform_choice_os = st.radio(
-            "Select the Platform:",
-            ("HuggingFace Platform", "Ollama Platform"),
+            label="Select the Platform:",
+            options=("HuggingFace", "Ollama"),
             key="opensource_platform",
             help="Further platforms are to be implemented, such as Ollama.",
         )
-        platform_name_os = platform_choice_os.split()[0]
-        if platform_name_os == "HuggingFace":
+        if platform_choice_os == "HuggingFace":
             huggingface_api_key = st.text_input(
-                f"{platform_name_os} API Key",
-                placeholder=f"Enter your {platform_name_os} API key",
+                label=f"{platform_choice_os} API Key",
+                placeholder=f"Enter your {platform_choice_os} API key",
                 type="password",
+                key="opensource_api_key",
             )
             huggingface_llm_name = st.text_input(
-                "Open-Sourced LLM Name or ID", placeholder="Enter the LLM name or ID"
+                label="Open-Sourced LLM Name or ID",
+                placeholder="Enter the LLM name or ID",
+                key="opensource_llm_name",
             )
             huggingface_embedding_model_name = st.text_input(
-                "Open-Sourced Embedding Model Name",
+                label="Open-Sourced Embedding Model Name",
                 placeholder="Enter the embedding model name",
+                key="opensource_embedding_model_name",
             )
             # If huggingface_embedding_model_name is not provided, fallback to OpenAI
             if not huggingface_embedding_model_name:
                 st.info(
-                    f"No {platform_name_os} embedding model specified. "
-                    f"The {platform_name_pr} embedding model will be used as a fallback."
+                    f"No {platform_choice_os} embedding model specified. "
+                    f"The {platform_choice_pr} embedding model will be used as a fallback."
                 )
 
-        elif platform_name_os == "Ollama":
+        elif platform_choice_os == "Ollama":
             st.warning(
                 (
-                    f"The {platform_name_os} Platform is not yet implemented. "
+                    f"The {platform_choice_os} Platform is not yet implemented. "
                     "Please select another platform."
                 )
             )
@@ -88,7 +94,7 @@ def display(prev_step, next_step):
         openai_api_version,
     ]
     # Remove endpoint and api_version from validation if OpenAI is the platform
-    if platform_name_pr == "OpenAI":
+    if platform_choice_pr == "OpenAI":
         for field in (openai_endpoint, openai_api_version):
             proprietary_fields.remove(field)
     # Fields used in validation
@@ -105,8 +111,8 @@ def display(prev_step, next_step):
         opensource_fields.remove(huggingface_embedding_model_name)
     # Fields used in validation
     opensource_fields_filled = (
-        platform_name_os == "HuggingFace" and all(opensource_fields)
-    ) or platform_name_os == "Ollama"
+        platform_choice_os == "HuggingFace" and all(opensource_fields)
+    ) or platform_choice_os == "Ollama"
 
     # Roaming buttons
     button_footers = st.columns([1, 1, 8])
