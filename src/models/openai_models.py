@@ -18,7 +18,6 @@ from src.utils.logger import logger
 PLATFORM = st.session_state.proprietary_platform
 
 
-# Embedding Model Initialization (Azure or OpenAI)
 def get_embed_model() -> AzureOpenAIEmbeddings | OpenAIEmbeddings:
     """
     Initializes and returns an embedding model, either AzureOpenAIEmbeddings or
@@ -52,7 +51,6 @@ def get_embed_model() -> AzureOpenAIEmbeddings | OpenAIEmbeddings:
     return embed_model
 
 
-# LLM Model Initialization (Azure or OpenAI)
 def get_proprietary_llm(
     task: Literal["generation", "evaluation"] = "generation"
 ) -> AzureOpenAI | OpenAI:
