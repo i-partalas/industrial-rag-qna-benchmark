@@ -70,6 +70,11 @@ def prepare_session_state():
         st.session_state.opensource_llm_name = None
     if "opensource_embedding_model_name" not in st.session_state:
         st.session_state.opensource_embedding_model_name = None
+    # LLMs session variables (general)
+    if "generation_temperature" not in st.session_state:
+        st.session_state.generation_temperature = 0.2
+    if "evaluation_temperature" not in st.session_state:
+        st.session_state.evaluation_temperature = 0.2
 
 
 def next_step():

@@ -73,6 +73,7 @@ def display(prev_step, next_step):
         max_value=1.0,
         value=0.2,
         step=0.05,
+        key="generation_temperature",
         help=(
             "Controls the randomness of predictions. "
             "Lower values make the model more deterministic."
@@ -95,6 +96,7 @@ def display(prev_step, next_step):
         max_value=1.0,
         value=0.2,
         step=0.05,
+        key="evaluation_temperature",
         help=(
             "Controls the randomness of predictions. "
             "Lower values make the model more deterministic."
@@ -108,9 +110,11 @@ def display(prev_step, next_step):
             max_text_length,
             new_after_n_chars,
             combine_text_under_n_chars,
+            retrieval_model,
             top_k_retrievals,
             model_temperature,
             max_tokens,
+            eval_model_temperature,
         ]
     ):
         button_footers[1].button("Next", on_click=next_step)
