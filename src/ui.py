@@ -43,6 +43,8 @@ def display_step_indicator():
 
 
 def prepare_session_state():
+    if "button_disabled" not in st.session_state:
+        st.session_state.button_disabled = False
     if "step" not in st.session_state:
         st.session_state.step = 0
     # Preprocessing session variables

@@ -3,12 +3,17 @@ import streamlit as st
 from preprocessing.preprocessing import PDFProcessor
 
 
+def disable_button():
+    st.session_state.button_disabled = True
+
+
 def display(prev_step, next_step):
     st.header("Run the Application")
     button_footers = st.columns([1.1, 1.1, 1.1, 6.7])
-    # TODO: Once clicked, disable "Run" button
     # TODO: Add "Stop" button
-    if button_footers[1].button("Run"):
+    if button_footers[1].button(
+        "Run", disabled=st.session_state.button_disabled, on_click=disable_button
+    ):
         with st.status("Running the application..."):
             # Run preprocessing
             st.write("Chunking PDF content into elements...")
